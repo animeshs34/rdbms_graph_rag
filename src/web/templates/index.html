@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDBMS to Graph RAG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .panel {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .query-result {
+            margin-top: 20px;
+        }
+        
+        .query-result h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .query-result pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .small-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 RDBMS to Graph RAG</h1>
+            <p>Migrate databases to knowledge graphs and query with natural language</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('migrate')">📊 Migrate Database</button>
+            <button class="tab" onclick="showTab('query')">🔍 Query Graph</button>
+            <button class="tab" onclick="showTab('cdc')">⚡ Real-time Sync</button>
+        </div>
+        
+        <!-- Migration Panel -->
+        <div id="migrate" class="panel active">
+            <h2>Migrate Database to Graph</h2>
+            <form id="migrateForm" onsubmit="handleMigrate(event)">
+                <div class="form-group">
+                    <label for="dbType">Database Type</label>
+                    <select id="dbType" required>
+                        <option value="postgres">PostgreSQL</option>
+                        <option value="mysql">MySQL</option>
+                        <option value="sqlite">SQLite</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="connectionString">Connection String</label>
+                    <input type="text" id="connectionString" placeholder="postgresql://user:pass@host:5432/dbname">
+                    <div class="small-text">Leave empty to use default configured database</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="domainPrefix">Domain Prefix (Optional)</label>
+                    <input type="text" id="domainPrefix" placeholder="e.g., Ecommerce, Healthcare">
+                    <div class="small-text">Prefix for node labels to isolate different domains</div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="clearTarget">
+                    <label for="clearTarget" style="margin-bottom: 0;">Clear existing graph data</label>
+                </div>
+                
+                <button type="submit">Start Migration</button>
+            </form>
+            
+            <div id="migrateLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Migrating database...</p>
+            </div>
+            
+            <div id="migrateResult" class="result"></div>
+        </div>
+        
+        <!-- Query Panel -->
+        <div id="query" class="panel">
+            <h2>Query Knowledge Graph</h2>
+            <form id="queryForm" onsubmit="handleQuery(event)">
+                <div class="form-group">
+                    <label for="queryText">Natural Language Query</label>
+                    <textarea id="queryText" placeholder="e.g., Show me all customers who made purchases in the last month" required></textarea>
+                </div>
+                
+                <button type="submit">Execute Query</button>
+            </form>
+            
+            <div id="queryLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Processing query...</p>
+            </div>
+            
+            <div id="queryResult" class="query-result"></div>
+        </div>
+        
+        <!-- CDC Panel -->
+        <div id="cdc" class="panel">
+            <h2>Real-time Database Synchronization</h2>
+            
+            <form id="cdcSetupForm" onsubmit="handleCDCSetup(event)">
+                <h3>Setup CDC</h3>
+                <div class="form-group">
+                    <label for="cdcDbType">Database Type</label>
+                    <select id="cdcDbType" required>
+                        <option value="postgres">PostgreSQL</option>
+                    </select>
+                    <div class="small-text">Currently only PostgreSQL is supported</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cdcConnectionString">Connection String</label>
+                    <input type="text" id="cdcConnectionString" placeholder="postgresql://user:pass@host:5432/dbname">
+                    <div class="small-text">Leave empty to use default configured database</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cdcDomainPrefix">Domain Prefix</label>
+                    <input type="text" id="cdcDomainPrefix" placeholder="e.g., Ecommerce">
+                </div>
+                
+                <button type="submit">Setup CDC</button>
+            </form>
+            
+            <div id="cdcSetupLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Setting up CDC...</p>
+            </div>
+            
+            <div id="cdcSetupResult" class="result"></div>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
+            
+            <h3>Control CDC</h3>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="handleCDCControl('start')">▶️ Start</button>
+                <button onclick="handleCDCControl('stop')">⏸️ Stop</button>
+                <button onclick="handleCDCControl('restart')">🔄 Restart</button>
+            </div>
+            
+            <div id="cdcControlResult" class="result"></div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected panel
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate selected tab
+            event.target.classList.add('active');
+        }
+        
+        async function handleMigrate(event) {
+            event.preventDefault();
+            
+            const loading = document.getElementById('migrateLoading');
+            const result = document.getElementById('migrateResult');
+            const form = document.getElementById('migrateForm');
+            
+            loading.classList.add('show');
+            result.classList.remove('show');
+            
+            const data = {
+                db_type: document.getElementById('dbType').value,
+                connection_string: document.getElementById('connectionString').value || null,
+                domain_prefix: document.getElementById('domainPrefix').value || null,
+                clear_target: document.getElementById('clearTarget').checked
+            };
+            
+            try {
+                const response = await fetch('/migrate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                
+                loading.classList.remove('show');
+                result.classList.add('show');
+                
+                if (response.ok) {
+                    result.classList.add('success');
+                    result.classList.remove('error');
+                    result.innerHTML = `<strong>✅ Migration successful!</strong><br><pre>${JSON.stringify(responseData, null, 2)}</pre>`;
+                } else {
+                    result.classList.add('error');
+                    result.classList.remove('success');
+                    result.innerHTML = `<strong>❌ Migration failed:</strong><br>${responseData.detail || JSON.stringify(responseData)}`;
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                result.classList.add('show', 'error');
+                result.classList.remove('success');
+                result.innerHTML = `<strong>❌ Error:</strong><br>${error.message}`;
+            }
+        }
+        
+        async function handleQuery(event) {
+            event.preventDefault();
+            
+            const loading = document.getElementById('queryLoading');
+            const result = document.getElementById('queryResult');
+            
+            loading.classList.add('show');
+            result.innerHTML = '';
+            
+            const data = {
+                query: document.getElementById('queryText').value
+            };
+            
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                
+                loading.classList.remove('show');
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <h3>Answer:</h3>
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            ${responseData.answer || 'No answer provided'}
+                        </div>
+                        <h3>Full Response:</h3>
+                        <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="result error show">
+                            <strong>❌ Query failed:</strong><br>${responseData.detail || JSON.stringify(responseData)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                result.innerHTML = `
+                    <div class="result error show">
+                        <strong>❌ Error:</strong><br>${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        async function handleCDCSetup(event) {
+            event.preventDefault();
+            
+            const loading = document.getElementById('cdcSetupLoading');
+            const result = document.getElementById('cdcSetupResult');
+            
+            loading.classList.add('show');
+            result.classList.remove('show');
+            
+            const data = {
+                db_type: document.getElementById('cdcDbType').value,
+                connection_string: document.getElementById('cdcConnectionString').value || null,
+                domain_prefix: document.getElementById('cdcDomainPrefix').value || null
+            };
+            
+            try {
+                const response = await fetch('/cdc/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                
+                loading.classList.remove('show');
+                result.classList.add('show');
+                
+                if (response.ok) {
+                    result.classList.add('success');
+                    result.classList.remove('error');
+                    result.innerHTML = `<strong>✅ CDC setup successful!</strong><br><pre>${JSON.stringify(responseData, null, 2)}</pre>`;
+                } else {
+                    result.classList.add('error');
+                    result.classList.remove('success');
+                    result.innerHTML = `<strong>❌ CDC setup failed:</strong><br>${responseData.detail || JSON.stringify(responseData)}`;
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                result.classList.add('show', 'error');
+                result.classList.remove('success');
+                result.innerHTML = `<strong>❌ Error:</strong><br>${error.message}`;
+            }
+        }
+        
+        async function handleCDCControl(action) {
+            const result = document.getElementById('cdcControlResult');
+            
+            result.classList.remove('show');
+            
+            try {
+                const response = await fetch('/cdc/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                
+                const responseData = await response.json();
+                
+                result.classList.add('show');
+                
+                if (response.ok) {
+                    result.classList.add('success');
+                    result.classList.remove('error');
+                    result.innerHTML = `<strong>✅ ${responseData.message}</strong>`;
+                } else {
+                    result.classList.add('error');
+                    result.classList.remove('success');
+                    result.innerHTML = `<strong>❌ Failed:</strong><br>${responseData.detail || JSON.stringify(responseData)}`;
+                }
+            } catch (error) {
+                result.classList.add('show', 'error');
+                result.classList.remove('success');
+                result.innerHTML = `<strong>❌ Error:</strong><br>${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
