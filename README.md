@@ -18,6 +18,10 @@
   <p><em>Scalable, Observable, and Explainable architecture for transforming relational databases into intelligent knowledge graphs</em></p>
 </div>
 
+## Demo Screen
+<div align="center">
+  <img src="docs/images/demo1.png" alt="RelationalDB to GraphRAG Production Architecture" width="100%">
+</div>
 ---
 
 ## 📖 Table of Contents
