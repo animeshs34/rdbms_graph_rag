@@ -1,4 +1,5 @@
-# Production Dependencies Only (No dev/test tools)
+# Production Dependencies Only (Optimized for Railway/Render)
+# Minimal dependencies for fast builds
 
 # Core Dependencies
 python-dotenv==1.0.0
@@ -13,25 +14,25 @@ sqlalchemy==2.0.23
 
 # Graph Databases
 neo4j==5.21.0
-boto3==1.34.0
-gremlinpython==3.7.0
 
-# LLM & AI (API-based, no heavy models)
+# LLM & AI (API-based only, no heavy models)
 openai==1.6.1
 google-generativeai==0.4.1
+
+# Langchain (minimal set)
 langchain==0.1.0
 langchain-openai==0.0.2
 langchain-google-genai==1.0.1
-langgraph==0.0.20
 langchain-community==0.0.10
+langgraph==0.0.20
 
-# Vector Search (lightweight - no PyTorch/transformers!)
+# Vector Search (lightweight)
 faiss-cpu==1.7.4
 numpy==1.26.2
 
 # API Framework
 fastapi==0.108.0
-uvicorn[standard]==0.25.0
+uvicorn==0.25.0
 python-multipart==0.0.6
 
 # Utilities
