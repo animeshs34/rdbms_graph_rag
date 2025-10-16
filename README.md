@@ -20,7 +20,7 @@
 
 ## Demo Screen
 <div align="center">
-  <img src="https://drive.google.com/file/d/1_qFC9_YGk0zjTeXol519eWbTuWJnOWLG/view?usp=sharing" alt="RelationalDB to GraphRAG Production Architecture" width="100%">
+ <img src="https://drive.google.com/uc?export=view&id=1_qFC9_YGk0zjTeXol519eWbTuWJnOWLG" alt="Working Demo" width="100%">
 </div>
 ---
 
