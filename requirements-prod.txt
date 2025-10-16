@@ -1,0 +1,43 @@
+# Production Dependencies Only (No dev/test tools)
+
+# Core Dependencies
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+PyYAML==6.0.1
+
+# Database Connectors
+psycopg2-binary==2.9.9
+PyMySQL==1.1.0
+sqlalchemy==2.0.23
+
+# Graph Databases
+neo4j==5.21.0
+boto3==1.34.0
+gremlinpython==3.7.0
+
+# LLM & AI (API-based, no heavy models)
+openai==1.6.1
+google-generativeai==0.4.1
+langchain==0.1.0
+langchain-openai==0.0.2
+langchain-google-genai==1.0.1
+langgraph==0.0.20
+langchain-community==0.0.10
+
+# Vector Search (lightweight - no PyTorch/transformers!)
+faiss-cpu==1.7.4
+numpy==1.26.2
+
+# API Framework
+fastapi==0.108.0
+uvicorn[standard]==0.25.0
+python-multipart==0.0.6
+
+# Utilities
+httpx==0.25.2
+tenacity==8.2.3
+loguru==0.7.2
+tqdm==4.66.1
+python-dateutil==2.8.2
+redis==5.0.1
